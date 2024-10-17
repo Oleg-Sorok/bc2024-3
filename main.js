@@ -11,9 +11,13 @@ program
 
 const options = program.opts();
 
-
 if (!options.input) {
     console.error("Please, specify input file");
+    process.exit(1);
+}
+
+if (!fs.existsSync(options.input)) {
+    console.error('Input file does not exist');
     process.exit(1);
 }
 
@@ -33,9 +37,25 @@ try {
     process.exit(1);
 }
 
+let maxRate = -Infinity;
+jsonData.forEach(entry => {
+    if (entry.rate && typeof entry.rate === 'number') {
+        if (entry.rate > maxRate) {
+            maxRate = entry.rate;
+        }
+    }
+});
+
+if (maxRate === -Infinity) {
+    console.error("No valid rate found in the data");
+    process.exit(1);
+}
+
+const result = `Максимальний курс:${maxRate}`;
+
 if (options.output) {
     try {
-        fs.writeFileSync(options.output, JSON.stringify(jsonData, null, 2));
+        fs.writeFileSync(options.output, result);
         console.log(`Result written to ${options.output}`);
     } catch (error) {
         console.error('Cannot write to output file');
@@ -44,5 +64,5 @@ if (options.output) {
 }
 
 if (options.display) {
-    console.log(jsonData);
+    console.log(result);
 }
